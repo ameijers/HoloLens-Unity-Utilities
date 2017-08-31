@@ -430,14 +430,6 @@ public class ObjectController : MonoBehaviour
             ObjectToControl.transform.localScale = MaxiumSize;
         }
 
-        //foreach (GameObject controller in controllers)
-        //{
-        //    Transform parent = controller.transform.parent;
-        //    controller.transform.parent = null;
-        //    controller.transform.localScale = controller.transform.lossyScale;
-        //    controller.transform.parent = parent;
-        //}
-
         UpdateLines();
         
     }
