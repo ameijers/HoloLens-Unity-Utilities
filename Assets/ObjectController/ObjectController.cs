@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.WSA.Input;
@@ -47,6 +47,11 @@ public class ObjectController : MonoBehaviour
 
     public float PositionDistance = 2.5f;
 
+
+    private const string ActionRotate = "rotate";
+    private const string ActionResize = "resize";
+    private const string ActionPosition = "position";
+
     /// <summary>
     /// Top-left-back
     /// Top-right-back
@@ -84,6 +89,9 @@ public class ObjectController : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
+        float scaleFactor = 10f;
+        BoxCollider collider;
+
         objectRenderer = ObjectToControl.GetComponent<Renderer>();
 
         originalObjectSize = ObjectToControl.transform.localScale;
@@ -94,17 +102,16 @@ public class ObjectController : MonoBehaviour
             controllers[index].transform.SetParent(gameObject.transform);
             controllers[index].transform.localScale = ControllerSize;
             // after localScale is set than you can adjust the collider
-            float scaleFactor = 10f;
-            BoxCollider collider = controllers[index].GetComponent<BoxCollider>();
+            collider = controllers[index].GetComponent<BoxCollider>();
             collider.size = new Vector3(ControllerSize.x * 2f * scaleFactor, ControllerSize.y * 2f * scaleFactor, ControllerSize.z * 2f * scaleFactor);
             controllers[index].layer = ControllerLayer;
 
             if (index < 8)
             {
-                controllerActions[index] = "resize";            }
+                controllerActions[index] = ActionResize;            }
             else
             {
-                controllerActions[index] = "rotate";
+                controllerActions[index] = ActionRotate;
             }
         }
 
@@ -120,8 +127,15 @@ public class ObjectController : MonoBehaviour
         positioner.transform.SetParent(gameObject.transform);
         positioner.layer = ControllerLayer;
 
-        EnableNavigationGestures();
+        SphereCollider positionCollider = positioner.GetComponent<SphereCollider>();
+        Destroy(positionCollider);
+        collider = positioner.AddComponent<BoxCollider>();
+        collider.size = new Vector3(ControllerSize.x * 2f * scaleFactor, ControllerSize.y * 2f * scaleFactor, ControllerSize.z * 2f * scaleFactor);
 
+        InitControllers();
+        InitPositioner();
+
+        EnableNavigationGestures();
     }
 
     // Update is called once per frame
@@ -136,6 +150,8 @@ public class ObjectController : MonoBehaviour
                 RaycastHit hitInfo;
                 if (Physics.Raycast(headPosition, gazeDirection, out hitInfo, 30.0f, 1 << ControllerLayer, QueryTriggerInteraction.Collide))
                 {
+                    ResetControllers();
+
                     focusedController = hitInfo.collider.gameObject;
 
                     focusedController.transform.localScale = new Vector3(.15f, .15f, .15f);
@@ -169,9 +185,8 @@ public class ObjectController : MonoBehaviour
             {
                 previousObjectPosition = ObjectToControl.transform.position;
 
-                UpdateControllers();
-                UpdatePositioner();
-               
+                // when the parent moves to another position, the controllers already move with the parent
+                // the lines do not move so they need to be redrawn
                 UpdateLines();
             }
 
@@ -194,9 +209,11 @@ public class ObjectController : MonoBehaviour
         {
             controller.transform.localScale = ControllerSize;
         }
+
+        positioner.transform.localScale = ControllerSize;
     }
 
-    private void UpdatePositioner()
+    private void InitPositioner()
     {
         Vector3 size = objectRenderer.bounds.size;
         Vector3 position = objectRenderer.bounds.center; // the absolute center of the object
@@ -204,7 +221,7 @@ public class ObjectController : MonoBehaviour
         positioner.transform.position = new Vector3(position.x, position.y + (size.y / 2) + OutboundOfObject * 2f, position.z);
     }
 
-    private void UpdateControllers()
+    private void InitControllers()
     {
         Vector3 size = objectRenderer.bounds.size;
         Vector3 position = objectRenderer.bounds.center; // the absolute center of the object
@@ -303,7 +320,7 @@ public class ObjectController : MonoBehaviour
 
         if (controller == positioner)
         {
-            return "position";
+            return ActionPosition;
         }
 
         for(int index = 0; index < controllers.Length; index++)
@@ -330,11 +347,11 @@ public class ObjectController : MonoBehaviour
                 {
                     string action = GetControllerAction(focusedController);
 
-                    if (action == "rotate")
+                    if (action == ActionRotate)
                     {
                         state = ControllerState.Rotate;
                     }
-                    else if (action == "resize")
+                    else if (action == ActionResize)
                     {
                         state = ControllerState.Resize;
                     }
