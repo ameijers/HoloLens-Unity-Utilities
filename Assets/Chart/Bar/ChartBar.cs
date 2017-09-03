@@ -26,6 +26,8 @@ public class ChartBar : MonoBehaviour
 
     public Color ValueColor = Color.white;
 
+    public int ValueFontSize = 100;
+
     public string Prefix = "%";
 
     [Header("Description")]
@@ -34,13 +36,17 @@ public class ChartBar : MonoBehaviour
 
     public Color TextColor = Color.white;
 
+    public int TextFontSize = 100;
+
     private float space = 0.01f;
 
     private Renderer barRenderer = null;
 
     private Vector3 initialPosition;
 
-    private GameObject textObject;
+    private GameObject textValueObject;
+
+    private GameObject textDescriptionObject;
 
     // Use this for initialization
     void Start()
@@ -50,11 +56,24 @@ public class ChartBar : MonoBehaviour
 
         barRenderer.material.color = BarColor;
 
-        textObject = new GameObject();
+        textValueObject = new GameObject();
         //textObject.transform.SetParent(gameObject.transform);
-        TextMesh textMesh = textObject.AddComponent<TextMesh>();
-        textObject.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+        TextMesh textMesh = textValueObject.AddComponent<TextMesh>();
+        textValueObject.transform.localScale = new Vector3(1f, 1f, 1f);
         textMesh.color = ValueColor;
+        textMesh.characterSize = .001f;
+        textMesh.fontSize = ValueFontSize;
+
+        textDescriptionObject = new GameObject();
+        TextMesh textDescription = textDescriptionObject.AddComponent<TextMesh>();
+        textDescriptionObject.transform.localScale = new Vector3(1f, 1f, 1f);
+        textDescription.color = TextColor;
+        textDescription.characterSize = .001f;
+        textDescription.fontSize = TextFontSize;
+        if (Direction == ChartDirection.Vertical)
+        {
+            textDescriptionObject.transform.Rotate(0, 0, 90);
+        }
     }
 
     // Update is called once per frame
@@ -82,19 +101,25 @@ public class ChartBar : MonoBehaviour
 
         gameObject.transform.localScale = scale;
 
-        TextMesh textMesh = textObject.GetComponent<TextMesh>();
+        TextMesh textMesh = textValueObject.GetComponent<TextMesh>();
         textMesh.text = string.Format("{0}{1}", Value.ToString(), Prefix);
-        MeshRenderer textRenderer = textObject.GetComponent<MeshRenderer>();
+        MeshRenderer textRenderer = textValueObject.GetComponent<MeshRenderer>();
+
+        TextMesh textDescriptionMesh = textDescriptionObject.GetComponent<TextMesh>();
+        textDescriptionMesh.text = Description;
+        MeshRenderer textDescriptionRenderer = textDescriptionObject.GetComponent<MeshRenderer>();
 
         if (Direction == ChartDirection.Horizontal)
         {
             gameObject.transform.position = new Vector3(initialPosition.x + barRenderer.bounds.size.x / 2, initialPosition.y, initialPosition.z);
-            textObject.transform.position = new Vector3(initialPosition.x + barRenderer.bounds.size.x + space, initialPosition.y + (textRenderer.bounds.size.y / 2), initialPosition.z);
+            textValueObject.transform.position = new Vector3(initialPosition.x + barRenderer.bounds.size.x + space, initialPosition.y + (textRenderer.bounds.size.y / 2), initialPosition.z);
+            textDescriptionObject.transform.position = new Vector3(initialPosition.x, initialPosition.y + barRenderer.bounds.size.y + (textDescriptionRenderer.bounds.size.y), initialPosition.z);
         }
         else
         {
             gameObject.transform.position = new Vector3(initialPosition.x, initialPosition.y + barRenderer.bounds.size.y / 2, initialPosition.z);
-            textObject.transform.position = new Vector3(initialPosition.x - textRenderer.bounds.size.x / 2f, initialPosition.y + barRenderer.bounds.size.y + textRenderer.bounds.size.y /2 + space, initialPosition.z);
+            textValueObject.transform.position = new Vector3(initialPosition.x - textRenderer.bounds.size.x / 2f, initialPosition.y + barRenderer.bounds.size.y + textRenderer.bounds.size.y /2 + space, initialPosition.z);
+            textDescriptionObject.transform.position = new Vector3(initialPosition.x - barRenderer.bounds.size.x - (textDescriptionRenderer.bounds.size.x / 2), initialPosition.y, initialPosition.z);
         }
     }
 }
