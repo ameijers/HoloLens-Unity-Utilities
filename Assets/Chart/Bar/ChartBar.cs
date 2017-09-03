@@ -94,7 +94,7 @@ public class ChartBar : MonoBehaviour
         else
         {
             gameObject.transform.position = new Vector3(initialPosition.x, initialPosition.y + barRenderer.bounds.size.y / 2, initialPosition.z);
-            textObject.transform.position = new Vector3(initialPosition.x + (textRenderer.bounds.size.x / 2), initialPosition.y + barRenderer.bounds.size.y + space, initialPosition.z);
+            textObject.transform.position = new Vector3(initialPosition.x - textRenderer.bounds.size.x / 2f, initialPosition.y + barRenderer.bounds.size.y + textRenderer.bounds.size.y /2 + space, initialPosition.z);
         }
     }
 }
