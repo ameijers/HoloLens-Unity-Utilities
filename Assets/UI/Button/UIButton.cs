@@ -49,13 +49,21 @@ public class UIButton : UIControlBase
         base.LoadButtonUIElements();
     }
 
+    public virtual object MessageValue
+    {
+        get
+        {
+            return this as UIControlBase;
+        }
+    }
+
     public override void OnButtonClicked()
     {
         base.OnButtonClicked();
 
         if (Target != null && TargetMethod != null)
         {
-            Target.SendMessage(TargetMethod, this as UIControlBase);
+            Target.SendMessage(TargetMethod, MessageValue);
         }
     }
 
