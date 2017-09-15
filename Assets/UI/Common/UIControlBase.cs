@@ -179,7 +179,13 @@ public class UIControlBase : MonoBehaviour, IButtonEvents
 
     public virtual void SetState(ButtonState state)
     {
+        ButtonStateEventProperties properties = new ButtonStateEventProperties();
+        properties.PreviousState = State;
+        properties.State = state;
+      
         State = state;
+
+        OnButtonStateChanged(properties);
 
         UpdateUI();
     }
